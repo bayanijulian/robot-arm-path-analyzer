@@ -22,11 +22,17 @@ def computeCoordinate(start, length, angle):
             start (tuple): base of the arm link. (x-coordinate, y-coordinate)
             length (int): length of the arm link
             angle (int): degree of the arm link from x-axis to couter-clockwise
-
+        
         Return:
             End position of the arm link, (x-coordinate, y-coordinate)
     """
-    pass
+    startX, startY = start
+    endX = startX + (math.cos(math.radians(angle)) * length) 
+    endY = startY - (math.sin(math.radians(angle)) * length)
+    #print("angle, length are {}, {}".format(angle, length)) 
+    #print("cos is {} and sine is {}".format(math.cos(angle), math.sin(angle)))
+    #print("startX is {} and endX is {} .... startY is {} and endY is {}".format(startX, endX, startY, endY))
+    return endX, endY
 
 def doesArmTouchObstacles(armPos, obstacles):
     """Determine whether the given arm links touch obstacles
