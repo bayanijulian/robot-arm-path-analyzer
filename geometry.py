@@ -27,13 +27,15 @@ def computeCoordinate(start, length, angle):
             End position of the arm link, (x-coordinate, y-coordinate)
     """
     startX, startY = start
+    
     endX = startX + (math.cos(math.radians(angle)) * length)
     endY = startY - (math.sin(math.radians(angle)) * length)
+    #print("startX:{}, startY:{}, endX:{}, endY:{}, length is {}".format(startX, startY, endX, endY, length))
     #print("angle, length are {}, {}".format(angle, length))
     #print("cos is {} and sine is {}".format(math.cos(angle), math.sin(angle)))
     #print("startX is {} and endX is {} .... startY is {} and endY is {}".format(startX, endX, startY, endY))
     return endX, endY
-
+# startX:150, startY:200, endX:160.45284632676535, endY:100.54781046317267, length is 100
 def doesArmTouchObstacles(armPos, obstacles):
     #if armPos[0][0] > 100:
     #    return True
@@ -44,7 +46,7 @@ def doesArmTouchObstacles(armPos, obstacles):
     #elbow_to_hand_length = math.sqrt(math.pow((armPos[1][1][1] - armPos[1][0][1]),2) + math.pow((armPos[1][1][0] - armPos[1][0][0]),2))
     #print(elbow_to_hand_length)
     #print(armPos[1][0], armPos[1][1])
-
+    #return False
     """Determine whether the given arm links touch obstacles
 
         Args:
@@ -54,7 +56,7 @@ def doesArmTouchObstacles(armPos, obstacles):
         Return:
             True if touched. False it not.
     """
-    #print(len(obstacles))
+    
     for arm in armPos:
         start, end = arm
         startX, startY = start
@@ -65,7 +67,7 @@ def doesArmTouchObstacles(armPos, obstacles):
             distance = distanceFromLineToPoint(startX, startY, endX, endY, x, y)
             if (distance <= r):
                 #print("distance is {} and circle {},{} and r is {}, startX:{}, startY:{}, endX:{}, endY:{}".format(distance, x, y, r, startX, startY, endX, endY))
-                #print("hit obstacle")
+                print("hit obstacle at {}, {}".format(x, y))
                 return True
     #print("not hitting anything")
     return False
@@ -73,20 +75,23 @@ def doesArmTouchObstacles(armPos, obstacles):
 # https://brilliant.org/wiki/dot-product-distance-between-point-and-a-line/
 # formula for shortest distance from a point to a line
 def distanceFromLineToPoint(startX, startY, endX, endY, pointX, pointY):
+    startY = 200 - startY
+    endY = 200 - endY
+    pointY = 200 - pointY
     # vertical line, so tallest point is endX and endY
     if (endX - startX == 0):
         deltaX = pointX - endX
         deltaY = pointY - endY
         distance = math.sqrt(math.pow(deltaX, 2) + math.pow(deltaY, 2))
-        #print("distance from function is {} and circle x, y is {}, {}".format(distance, pointX, pointY))
+        #print("distance from function is {} and  y1, y2 is {}, {}".format(distance, startY, endY))
         return distance
     # istance is 5.234924505375147 and circle 150,50 and r is 10, startX:150, startY:200, endX:153.4899496702501, endY:100.06091729809043
     # a = slope, switched y2 and y1 for different coordinate
-    m = (startY - endY) / (endX - startX)
+    m =  (endY - startY) / (endX - startX)
     a = m
     b = -1
     # c = -mx1 + y1
-    c = ((m * -1) * startX ) + startY
+    c = ((m * -1) * startX) + startY
     numerator = (a * pointX) + (b * pointY) + c
     denominator = math.sqrt(math.pow(a, 2) + math.pow(b, 2))
     distance = math.fabs(numerator) / denominator
