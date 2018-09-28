@@ -54,8 +54,7 @@ def doesArmTouchObstacles(armPos, obstacles):
         Return:
             True if touched. False it not.
     """
-<<<<<<< HEAD
-    print(len(obstacles))
+    #print(len(obstacles))
     for arm in armPos:
         start, end = arm
         startX, startY = start
@@ -69,8 +68,6 @@ def doesArmTouchObstacles(armPos, obstacles):
                 #print("hit obstacle")
                 return True
     #print("not hitting anything")
-=======
->>>>>>> 13b2a9751870be0eaaf3ee38c3e118874036397e
     return False
 
 # https://brilliant.org/wiki/dot-product-distance-between-point-and-a-line/
@@ -119,6 +116,7 @@ def doesArmTouchGoals(armEnd, goals):
 
 
 def isArmWithinWindow(armPos, window):
+
     """Determine whether the given arm stays in the window
 
         Args:
@@ -128,4 +126,13 @@ def isArmWithinWindow(armPos, window):
         Return:
             True if all parts are in the window. False it not.
     """
+    for arm in armPos:
+        start, end = arm
+        startX, startY = start
+        endX, endY = end
+        width, height = window
+        if startX < 0 or startY < 0 or endX > width or endY > height:
+            return False
+        if endX < 0 or endY < 0 or startX > width or startY > height:
+            return False
     return True
