@@ -12,13 +12,14 @@ Obstacles : [
                 (125, 70, 10),          # (x-coordinate, y-coordinate, radius)    
                 (90, 90, 10),
                 (165, 30, 10),     
-                (185, 60, 10)
+                (185, 60, 10),
                 #(200, 150, 10),
-                #(300, 50, 10)
+                #(300, 50, 10),
+                #(150, 0, 10)
             ]
 
 Goals : [
-            #(150, 50, 10)               # (x-coordinate, y-coordinate, radius)        
+            (150, 50, 10)               # (x-coordinate, y-coordinate, radius)        
         ]
 
 

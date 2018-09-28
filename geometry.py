@@ -34,9 +34,10 @@ def computeCoordinate(start, length, angle):
     #print("angle, length are {}, {}".format(angle, length))
     #print("cos is {} and sine is {}".format(math.cos(angle), math.sin(angle)))
     #print("startX is {} and endX is {} .... startY is {} and endY is {}".format(startX, endX, startY, endY))
+    
     return endX, endY
 # startX:150, startY:200, endX:160.45284632676535, endY:100.54781046317267, length is 100
-def doesArmTouchObstacles(armPos, obstacles):
+def olddoesArmTouchObstacles(armPos, obstacles):
     #if armPos[0][0] > 100:
     #    return True
     #print(armPos[0][0], armPos[0][1])
@@ -61,23 +62,102 @@ def doesArmTouchObstacles(armPos, obstacles):
         start, end = arm
         startX, startY = start
         endX, endY = end
+        outOfBounds = True
         #print("start is {} and end is {}".format(start, end))
         for obstacle in obstacles:
+            
             x, y, r = obstacle
+            
+            #y - y1 = m (x - x1)
+            startY = 200 - startY
+            endY = 200 - endY
+            y = 200 - y
             distance = distanceFromLineToPoint(startX, startY, endX, endY, x, y)
-            if (distance <= r):
+            intersectY = 0
+            intersectX = 0
+            if(startY == 0):
+                continue
+            
+            if (endY - startY == 0):
+                angle = math.radians(90)
+                
+                
+            else:
+                perpenidicular_slope = -1 * (endX - startX) / (endY - startY)
+                angle = math.atan(perpenidicular_slope)
+                print("slope is {}".format(perpenidicular_slope))
+            intersectX = x - (math.cos(angle)*distance)
+
+            arm_angle = math.atan(slope)
+
+            print("start is {},{} and end is {},{}".format(startX, startY, endX, endY))
+            print("angle is {}".format(math.degrees(angle)))
+            
+            
+            intersectY = y - (math.sin(angle)*distance)
+            
+            if(endX - startX < 0):
+                temp = startX
+                startX = endX
+                endX = temp
+            if(endY- startY < 0):
+                temp = startY
+                startY = endY
+                endY = temp
+            
+            #(intersectX >= startX) and (intersectX <= endX) and 
+            if (intersectX >= startX) and (intersectX <= endX) and (intersectY <= endY) and (intersectY >= startY):
+                outOfBounds = False
+            else:
+                print("miss X- {}, {} intersects at x = {} with arm range x {},{}".format(x, y, intersectX, startX, endX))
+                print("miss Y- {}, {} intersects at y = {} with arm range y {},{}".format(x, y, intersectY, startY, endY))
+            #if (endX - startX == 0):
+            #outOfBounds = False
+            if (distance <= r) and not outOfBounds:
+                print("hit X- {}, {} intersects at x = {} with arm range x {},{}".format(x, y, intersectX, startX, endX))
+                print("hit Y- {}, {} intersects at y = {} with arm range y {},{}".format(x, y, intersectY, startY, endY))
                 #print("distance is {} and circle {},{} and r is {}, startX:{}, startY:{}, endX:{}, endY:{}".format(distance, x, y, r, startX, startY, endX, endY))
-                print("hit obstacle at {}, {}".format(x, y))
+                #print("hit obstacle at {}, {}".format(x, y))
                 return True
+            else:
+                print("missed distance for {}, {} intersects at x = {} with arm range x {},{} with dist {}".format(x, y, intersectX, startX, endX, distance))
     #print("not hitting anything")
+    return False
+
+def doesArmTouchObstacles(armPos, obstacles):
+    for arm in armPos:
+        start, end = arm
+        #print("start: {} end: {}".format(start, end))
+        startX, startY = start
+        endX, endY = end
+
+        startY = 200 - startY
+        endY = 200 - endY
+
+        start = (startX, startY)
+        end = (endX, endY)
+        for obstacle in obstacles:
+            
+            x, y, r = obstacle
+            
+            #y - y1 = m (x - x1)
+            
+            y = 200 - y
+            
+            center = (x, y)
+            #print("end: {} does not collide with {}".format(end, center))
+            flag = doesCircleLineCollide(start, end, center, r)
+            if(flag):
+                #print("start: {} collides with {}".format(start, center))
+                return True
+            
+                
     return False
 
 # https://brilliant.org/wiki/dot-product-distance-between-point-and-a-line/
 # formula for shortest distance from a point to a line
 def distanceFromLineToPoint(startX, startY, endX, endY, pointX, pointY):
-    startY = 200 - startY
-    endY = 200 - endY
-    pointY = 200 - pointY
+    
     # vertical line, so tallest point is endX and endY
     if (endX - startX == 0):
         deltaX = pointX - endX
@@ -96,6 +176,30 @@ def distanceFromLineToPoint(startX, startY, endX, endY, pointX, pointY):
     denominator = math.sqrt(math.pow(a, 2) + math.pow(b, 2))
     distance = math.fabs(numerator) / denominator
     return distance
+
+def doesCircleLineCollide(start, end, center, radius):
+    #print("start:{}, end:{}, center:{}, radius:{}".format(start, end, center, radius))
+    line = tuple(np.subtract(end, start))
+    #print("line is {}".format(line))
+    lineToCircle = tuple(np.subtract(start, center))
+    #print("lineCircle is {}".format(lineToCircle))
+    a = np.dot(line,line)
+    #print("a is {}".format(a))
+    b = 2 * np.dot(lineToCircle,line)
+    #print("b is {}".format(b))
+    c = np.dot(lineToCircle,lineToCircle) - (radius * radius)
+    #print("c is {}".format(c))
+    discrim = (b*b) - (4 * a * c)
+    if (discrim > 0):
+        discrim = math.sqrt(discrim)
+        t1 = ((b*-1) - discrim) / (2*a)
+        t2 = ((b*-1) + discrim) / (2*a)
+        if (t1 >= 0) and (t1 <= 1):
+            return True
+        if (t2 >= 0) and (t2 <= 0):
+            return True
+    return False
+    
 
 def doesArmTouchGoals(armEnd, goals):
 
