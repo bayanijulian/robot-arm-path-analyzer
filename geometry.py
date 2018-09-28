@@ -43,8 +43,44 @@ def doesArmTouchObstacles(armPos, obstacles):
 
         Return:
             True if touched. False it not.
-    """    
+    """
+    print(len(obstacles))
+    for arm in armPos:
+        start, end = arm
+        startX, startY = start
+        endX, endY = end
+        #print("start is {} and end is {}".format(start, end))
+        for obstacle in obstacles:
+            x, y, r = obstacle
+            distance = distanceFromLineToPoint(startX, startY, endX, endY, x, y)
+            if (distance <= r):
+                #print("distance is {} and circle {},{} and r is {}, startX:{}, startY:{}, endX:{}, endY:{}".format(distance, x, y, r, startX, startY, endX, endY))
+                #print("hit obstacle")
+                return True
+    #print("not hitting anything")
     return False
+
+# https://brilliant.org/wiki/dot-product-distance-between-point-and-a-line/
+# formula for shortest distance from a point to a line
+def distanceFromLineToPoint(startX, startY, endX, endY, pointX, pointY):
+    # vertical line, so tallest point is endX and endY
+    if (endX - startX == 0):
+        deltaX = pointX - endX
+        deltaY = pointY - endY
+        distance = math.sqrt(math.pow(deltaX, 2) + math.pow(deltaY, 2))
+        #print("distance from function is {} and circle x, y is {}, {}".format(distance, pointX, pointY))
+        return distance
+    # istance is 5.234924505375147 and circle 150,50 and r is 10, startX:150, startY:200, endX:153.4899496702501, endY:100.06091729809043
+    # a = slope, switched y2 and y1 for different coordinate
+    m = (startY - endY) / (endX - startX)
+    a = m
+    b = -1
+    # c = -mx1 + y1
+    c = ((m * -1) * startX ) + startY
+    numerator = (a * pointX) + (b * pointY) + c
+    denominator = math.sqrt(math.pow(a, 2) + math.pow(b, 2))
+    distance = math.fabs(numerator) / denominator
+    return distance
 
 def doesArmTouchGoals(armEnd, goals):
     """Determine whether the given arm links touch goals
@@ -56,6 +92,7 @@ def doesArmTouchGoals(armEnd, goals):
         Return:
             True if touched. False it not.
     """
+
     return False
 
 
