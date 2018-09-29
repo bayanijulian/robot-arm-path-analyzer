@@ -1,5 +1,14 @@
 # CS 440 MP2: Robotic Arm
+```
+To run robot arm picture
+python3 mp2.py --map BasicMap --method astar --trajectory 1
 
+To run maze picture
+python3 mp1.py --method astar basic2.txt --scale 5
+
+To create maze picture
+python3 mp2.py --map BasicMap --save-maze basic4.txt
+```
 ## Implement:
 1. geometry.py
 2. transform.py
