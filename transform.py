@@ -40,19 +40,18 @@ def transformToMaze(arm, goals, obstacles, window, granularity):
 
     rows = int(((alphaMax - alphaMin) / granularity) + 1)
     cols = int(((betaMax - betaMin) / granularity) + 1)
-    print("rows:{}, cols:{}".format(rows, cols))
 
-    alpha = alphaMin - granularity
-    
     startAngles = arm.getArmAngle()
     
     map = []
-
-    for x in range(rows):
+    # subtracts one because it will just add one in first loop
+    alpha = alphaMin - granularity
+    for x in range(rows): # all alpha values
         row = []
         alpha += granularity
+        # subtracts one because it will just add one in first loop
         beta = betaMin - granularity
-        for y in range(cols):
+        for y in range(cols): # all beta values at the current alpha
             beta += granularity
             arm.setArmAngle((alpha, beta))
             armPos = arm.getArmPos()
@@ -66,14 +65,16 @@ def transformToMaze(arm, goals, obstacles, window, granularity):
             if isObjective:
                 row.append(OBJECTIVE_CHAR)
                 continue
-                
+
+            # not objective or wall then free space    
             row.append(SPACE_CHAR)
         map.append(row)
     
-    
+    # transforms start angles to index in maze
     startIndexes = angleToIdx(startAngles, (alphaMin, betaMin), granularity)
     startAlpha, startBeta = startIndexes
+    # adds start to maze
     map[startAlpha][startBeta] = START_CHAR
+
     maze = Maze(map, (alphaMin, betaMin), granularity)
-    
     return maze
