@@ -64,14 +64,14 @@ def astar(maze):
 
         neighbors = None
         if(numArms == 1):
-            alpha = (currentNode.state)
+            alpha = currentNode.state
             neighbors = maze.getNeighbors(alpha)
         elif(numArms == 2):
             alpha, beta = (currentNode.state)
             neighbors = maze.getNeighbors(alpha, beta)
         elif(numArms == 3):
             alpha, beta, gamma = (currentNode.state)
-            maze.getNeighbors(alpha, beta, gamma)
+            neighbors = maze.getNeighbors(alpha, beta, gamma)
         
         for neighbor in neighbors:
             node = currentNode.add_child(neighbor)
@@ -127,10 +127,19 @@ class NodeAstar:
         return min_dist
 
     def get_manhattan_distance(self, start, end):
-        delta_row = start[0] - end[0]
-        delta_col = start[1] - end[1]
-        distance = abs(delta_row) + abs(delta_col)
-        return distance
+        if(len(start) == 1):
+            return start[0] - end[0]
+        if(len(start) == 2):
+            delta_row = start[0] - end[0]
+            delta_col = start[1] - end[1]
+            distance = abs(delta_row) + abs(delta_col)
+            return distance
+        else:
+            delta_row = start[0] - end[0]
+            delta_col = start[1] - end[1]
+            delta_depth = start[2] - end[2]
+            distance = abs(delta_row) + abs(delta_col) + abs(delta_depth)
+            return distance
 
     def get_solution(self):
         current_node = self

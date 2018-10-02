@@ -210,8 +210,9 @@ def transformToMazeFor1Arm(arm, goals, obstacles, window, granularity):
 
     """
    
-    alphaLimits = arm.getArmLimit()
-    alphaMin, alphaMax = alphaLimits
+    alphaLimits = arm.getArmLimit()[0]
+    alphaMin = alphaLimits[0]
+    alphaMax = alphaLimits[1]
     
     rows = int(((alphaMax - alphaMin) / granularity) + 1)
 
@@ -225,7 +226,7 @@ def transformToMazeFor1Arm(arm, goals, obstacles, window, granularity):
         alpha += granularity
         # subtracts one because it will just add one in first loop
        
-        arm.setArmAngle((alpha))
+        arm.setArmAngle((alpha,))
         armPos = arm.getArmPos()
         armEnd = arm.getEnd()
 
@@ -249,10 +250,10 @@ def transformToMazeFor1Arm(arm, goals, obstacles, window, granularity):
         
     
     # transforms start angles to index in maze
-    startIndexes = angleToIdx(startAngles, (alphaMin), granularity)
+    startIndexes = angleToIdx(startAngles, (alphaMin,), granularity)
     startAlpha = startIndexes[0]
     # adds start to maze
     map[startAlpha] = START_CHAR
 
-    maze = Maze(map, (alphaMin), granularity)
+    maze = Maze(map, (alphaMin,), granularity)
     return maze
