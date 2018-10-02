@@ -43,7 +43,7 @@ def greedy(maze):
 def astar(maze):
     start = maze.getStart()
     goals = set(maze.getObjectives())
-
+    numArms = len(start)
     frontier = []
     explored = set([])
     costLookUp = {}
@@ -62,8 +62,18 @@ def astar(maze):
         if(currentNode.is_goal()):
             break
 
-        alpha, beta = currentNode.state
-        for neighbor in maze.getNeighbors(alpha, beta):
+        neighbors = None
+        if(numArms == 1):
+            alpha = (currentNode.state)
+            neighbors = maze.getNeighbors(alpha)
+        elif(numArms == 2):
+            alpha, beta = (currentNode.state)
+            neighbors = maze.getNeighbors(alpha, beta)
+        elif(numArms == 3):
+            alpha, beta, gamma = (currentNode.state)
+            maze.getNeighbors(alpha, beta, gamma)
+        
+        for neighbor in neighbors:
             node = currentNode.add_child(neighbor)
             if node not in explored and node not in frontier:
                 heapq.heappush(frontier, node)

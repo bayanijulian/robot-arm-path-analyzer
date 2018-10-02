@@ -36,7 +36,9 @@ def transformToMaze(arm, goals, obstacles, window, granularity):
     """
     if(arm.getNumArmLinks() == 3): 
         return transformToMazeFor3Arms(arm, goals, obstacles, window, granularity)
-        
+    if(arm.getNumArmLinks() == 1):
+        return transformToMazeFor1Arm(arm, goals, obstacles, window, granularity)
+
     alphaLimits, betaLimits = arm.getArmLimit()
     alphaMin, alphaMax = alphaLimits
     betaMin, betaMax = betaLimits
@@ -116,7 +118,7 @@ def transformToMazeFor3Arms(arm, goals, obstacles, window, granularity):
 
     rows = int(((alphaMax - alphaMin) / granularity) + 1)
     cols = int(((betaMax - betaMin) / granularity) + 1)
-    depth = int(((gammaMax - gammaMin) / granularity) + 1)
+    depths = int(((gammaMax - gammaMin) / granularity) + 1)
 
     startAngles = arm.getArmAngle()
     
@@ -127,24 +129,42 @@ def transformToMazeFor3Arms(arm, goals, obstacles, window, granularity):
         row = []
         alpha += granularity
         # subtracts one because it will just add one in first loop
+        arm.setArmAngle((alpha, betaMin, gammaMin))
+        armPos = arm.getArmPos()
+        isWallFirstArm = doesArmTouchObstacles([armPos[0]], obstacles) or not isArmWithinWindow([armPos[0]], window)
+        if(isWallFirstArm):
+            depth = []
+            for y in range(cols):
+                for z in range(depths):
+                    depth.append(WALL_CHAR)
+                row.append(depth)
+            map.append(row)
+            continue
+
         beta = betaMin - granularity
         for y in range(cols): # all beta values at the current alpha
-            depths = []
+            depth = []
             beta += granularity
             gamma = gammaMin - granularity
-            for z in range(depth):
+
+            arm.setArmAngle((alpha, beta, gammaMin))
+            armPos = arm.getArmPos()
+            
+            isWallSecondArm = doesArmTouchObstacles([armPos[0]], obstacles) or not isArmWithinWindow([armPos[0]], window)
+            if(isWallSecondArm):
+                depth = []
+                for z in range(depths):
+                    depth.append(WALL_CHAR)
+                row.append(depth)    
+                continue
+            for z in range(depths):
                 gamma += granularity
 
                 arm.setArmAngle((alpha, beta, gamma))
                 armPos = arm.getArmPos()
                 armEnd = arm.getEnd()
 
-                # isWallFirstArm = doesArmTouchObstacles([armPos[0]], obstacles) or not isArmWithinWindow([armPos[0]], window)
-                # if(isWallFirstArm):
-                #     for y in range(cols):
-                #         row.append(WALL_CHAR)
-                #     map.append(row)
-                #     break
+                
             
                 isWall = doesArmTouchObstacles(armPos, obstacles) or not isArmWithinWindow(armPos, window)
                 if isWall:
@@ -173,4 +193,66 @@ def transformToMazeFor3Arms(arm, goals, obstacles, window, granularity):
     map[startAlpha][startBeta][startGamma] = START_CHAR
 
     maze = Maze(map, (alphaMin, betaMin, gammaMin), granularity)
+    return maze
+
+def transformToMazeFor1Arm(arm, goals, obstacles, window, granularity):
+    """This function transforms the given 2D map to the maze in MP1.
+    
+        Args:
+            arm (Arm): arm instance
+            goals (list): [(x, y, r)] of goals
+            obstacles (list): [(x, y, r)] of obstacles
+            window (tuple): (width, height) of the window
+            granularity (int): unit of increasing/decreasing degree for angles
+
+        Return:
+            Maze: the maze instance generated based on input arguments.
+
+    """
+   
+    alphaLimits = arm.getArmLimit()
+    alphaMin, alphaMax = alphaLimits
+    
+    rows = int(((alphaMax - alphaMin) / granularity) + 1)
+
+    startAngles = arm.getArmAngle()
+    
+    map = []
+    # subtracts one because it will just add one in first loop
+    alpha = alphaMin - granularity
+    for x in range(rows): # all alpha values
+       
+        alpha += granularity
+        # subtracts one because it will just add one in first loop
+       
+        arm.setArmAngle((alpha))
+        armPos = arm.getArmPos()
+        armEnd = arm.getEnd()
+
+        isWall = doesArmTouchObstacles(armPos, obstacles) or not isArmWithinWindow(armPos, window)
+        if isWall:
+            map.append(WALL_CHAR)
+            continue
+
+        doesGoThrough = not doesArmTouchGoals(armEnd, goals) and doesArmTouchObstacles(armPos, goals)
+        if doesGoThrough:
+            map.append(WALL_CHAR)
+            continue
+
+        isObjective = doesArmTouchGoals(armEnd, goals)
+        if isObjective:
+            map.append(OBJECTIVE_CHAR)
+            continue
+
+        # not objective or wall then free space    
+        map.append(SPACE_CHAR)
+        
+    
+    # transforms start angles to index in maze
+    startIndexes = angleToIdx(startAngles, (alphaMin), granularity)
+    startAlpha = startIndexes[0]
+    # adds start to maze
+    map[startAlpha] = START_CHAR
+
+    maze = Maze(map, (alphaMin), granularity)
     return maze
