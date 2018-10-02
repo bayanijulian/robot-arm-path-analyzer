@@ -50,16 +50,24 @@ class Maze:
             print("Maze has no objectives")
             raise SystemExit
 
-    def getChar(self, alpha, beta, gamma):
+    def getChar(self, alpha, beta = 0, gamma = 0):
         # Get character for the given alpha and beta position
-        x, y = angleToIdx((alpha, beta, gamma), self.offsets, self.granularity)
-        return self.__map[x][y][z]
 
-    def isWall(self, alpha, beta, gamma):
+        if len(self.offsets) == 3:
+            x, y, z = angleToIdx((alpha, beta, gamma), self.offsets, self.granularity)
+            return self.__map[x][y][z]
+        elif len(self.offsets) == 2:
+            x, y = angleToIdx((alpha, beta), self.offsets, self.granularity)
+            return self.__map[x][y]
+        else:
+            x = angleToIdx((alpha), self.offsets, self.granularity)
+        return self.__map[x]
+
+    def isWall(self, alpha, beta = 0, gamma = 0):
         # Returns True if the given position is the location of a wall
         return self.getChar(alpha, beta, gamma) == WALL_CHAR
 
-    def isObjective(self, alpha, beta, gamma):
+    def isObjective(self, alpha, beta = 0, gamma = 0):
         # Rturns True if the given position is the location of an objective
         return self.getChar(alpha, beta, gamma) == OBJECTIVE_CHAR
 
@@ -83,40 +91,91 @@ class Maze:
         # Set the list of objective positions of the maze
         self.__objective = objectives
 
-    def isValidMove(self, alpha, beta, gamma):
+    def isValidMove(self, alpha, beta = 0, gamma = 0):
         # Check if the agent can move into a specific beta and column
-        x, y, z = angleToIdx((alpha, beta, gamma), self.offsets, self.granularity)
+        if len(self.offsets) == 3:
+            x, y, z = angleToIdx((alpha, beta, gamma), self.offsets, self.granularity)
+            return x >= 0 and x < self.getDimensions()[ALPHA] and \
+                   y >= 0 and y < self.getDimensions()[BETA] and \
+                   z >= 0 and z < self.getDimensions()[GAMMA] and \
+                   not self.isWall(alpha, beta, gamma)
+        elif len(self.offsets) == 2:
+            x, y = angleToIdx((alpha, beta), self.offsets, self.granularity)
+            return x >= 0 and x < self.getDimensions()[ALPHA] and \
+                   y >= 0 and y < self.getDimensions()[BETA] and \
+                   not self.isWall(alpha, beta)
+        else:
+            x = angleToIdx((alpha), self.offsets, self.granularity)
         return x >= 0 and x < self.getDimensions()[ALPHA] and \
-               y >= 0 and y < self.getDimensions()[BETA] and \
-               z >= 0 and z < self.getDimensions()[GAMMA] and \
-               not self.isWall(alpha, beta, gamma)
+               not self.isWall(alpha)
 
-    def getNeighbors(self, alpha, beta, gamma):
+
+    def getNeighbors(self, alpha, beta = 0, gamma = 0):
         # Returns list of neighboing squares that can be moved to from the given beta,gamma
-        possibleNeighbors = [
-            (alpha + self.granularity, beta, gamma),
-            (alpha - self.granularity, beta, gamma),
-            (alpha, beta + self.granularity, gamma),
-            (alpha, beta - self.granularity, gamma),
-            (alpha, beta, gamma + self.granularity),
-            (alpha, beta, gamma - self.granularity)
-        ]
-        neighbors = []
-        for a, b, c in possibleNeighbors:
-            if self.isValidMove(a,b,c):
-                neighbors.append((a,b,c))
+        if len(self.offsets) == 3:
+            possibleNeighbors = [
+                (alpha + self.granularity, beta, gamma),
+                (alpha - self.granularity, beta, gamma),
+                (alpha, beta + self.granularity, gamma),
+                (alpha, beta - self.granularity, gamma),
+                (alpha, beta, gamma + self.granularity),
+                (alpha, beta, gamma - self.granularity)
+            ]
+            neighbors = []
+            for a, b, c in possibleNeighbors:
+                if self.isValidMove(a,b,c):
+                    neighbors.append((a,b,c))
+            return neighbors
+        elif len(self.offsets) == 2:
+            possibleNeighbors = [
+                (alpha + self.granularity, beta, gamma),
+                (alpha - self.granularity, beta, gamma),
+                (alpha, beta + self.granularity, gamma),
+                (alpha, beta - self.granularity, gamma),
+            ]
+            neighbors = []
+            for a, b in possibleNeighbors:
+                if self.isValidMove(a,b):
+                    neighbors.append((a,b))
+            return neighbors
+        else:
+            possibleNeighbors = [
+                (alpha + self.granularity, beta, gamma),
+                (alpha - self.granularity, beta, gamma),
+            ]
+            neighbors = []
+            for a in possibleNeighbors:
+                if self.isValidMove(a):
+                    neighbors.append((a))
         return neighbors
 
     def saveToFile(self, filename):
         # Export the maze to the text file
         outputMap = ""
-        for gamma in range(self.__dimensions[2]):
+
+        if len(self.offsets) == 3:
+            for gamma in range(self.__dimensions[2]):
+                for beta in range(self.__dimensions[1]):
+                    for alpha in range(self.__dimensions[0]):
+                        outputMap += self.__map[alpha][beta][gamma]
+                    outputMap += "\n"
+            with open(filename, 'w') as f:
+                f.write(outputMap)
+
+        elif len(self.offsets) == 2:
             for beta in range(self.__dimensions[1]):
                 for alpha in range(self.__dimensions[0]):
-                    outputMap += self.__map[alpha][beta][gamma]
+                    outputMap += self.__map[alpha][beta]
                 outputMap += "\n"
+            with open(filename, 'w') as f:
+                f.write(outputMap)
 
-        with open(filename, 'w') as f:
-            f.write(outputMap)
+        else:
+            for alpha in range(self.__dimensions[0]):
+                outputMap += self.__map[alpha]
+            outputMap += "\n"
+
+            with open(filename, 'w') as f:
+                f.write(outputMap)
 
         return True
