@@ -55,13 +55,26 @@ def transformToMaze(arm, goals, obstacles, window, granularity):
             beta += granularity
             arm.setArmAngle((alpha, beta))
             armPos = arm.getArmPos()
+            armEnd = arm.getEnd()
 
+            isWallFirstArm = doesArmTouchObstacles([armPos[0]], obstacles) or not isArmWithinWindow([armPos[0]], window)
+            if(isWallFirstArm):
+                for y in range(cols):
+                    row.append(WALL_CHAR)
+                map.append(row)
+                break
+            
             isWall = doesArmTouchObstacles(armPos, obstacles) or not isArmWithinWindow(armPos, window)
             if isWall:
                 row.append(WALL_CHAR)
                 continue
 
-            isObjective = doesArmTouchObstacles(armPos, goals)
+            doesGoThrough = not doesArmTouchGoals(armEnd, goals) and doesArmTouchObstacles(armPos, goals)
+            if doesGoThrough:
+                row.append(WALL_CHAR)
+                continue
+
+            isObjective = doesArmTouchGoals(armEnd, goals)
             if isObjective:
                 row.append(OBJECTIVE_CHAR)
                 continue
